@@ -1,0 +1,24 @@
+{
+  "name": "student-gpa-monitor",
+  "version": "1.0.0",
+  "description": "Simple program for students to upload their classes and grades and track their current GPAs",
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests Complete\"",
+    "nodemon": "nodemon --inspect -e js,html,css --watch ./src --watch ./hosted ./src/server.js",
+    "build": "babel ./client --out-file ./hosted/bundle.js",
+    "watch": "babel --watch ./client --out-file ./hosted/bundle.js --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IGME-430/project1.git"
+  },
+  "author": "Benjamin Kleynhans",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/IGME-430/project1/issues"
+  },
+  "homepage": "https://github.com/IGME-430/project1#readme"
+}
