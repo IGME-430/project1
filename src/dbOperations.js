@@ -12,7 +12,7 @@ const connectionPreferences = {
     database: 'igme430',
   },
   other: {
-    host: 'us-cdbr-iron-east-04.cleardb.net/heroku_3db47b740946390',
+    host: 'us-cdbr-iron-east-04.cleardb.net',
     user: 'bcffdfd87debd6',
     password: 'bc7e6d6d',
     database: 'heroku_3db47b740946390',
