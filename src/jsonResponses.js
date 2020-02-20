@@ -1,5 +1,8 @@
 const query = require('querystring');
+<<<<<<< HEAD
 const dbOperations = require('./dbOperations.js');
+=======
+>>>>>>> 9b60cb8484bb5afc515bad95def5e3047d816f73
 
 const users = {};
 
@@ -101,6 +104,7 @@ const addUser = (request, response) => {
 
 // return the users object
 const getUsers = (request, response) => {
+<<<<<<< HEAD
   const responseJSON = {};
   // let data = {};
 
@@ -121,6 +125,13 @@ const getUsers = (request, response) => {
   // };
 
   // respondJSON(request, response, 200, responseJSON);
+=======
+  const responseJSON = {
+    users,
+  };
+
+  respondJSON(request, response, 200, responseJSON);
+>>>>>>> 9b60cb8484bb5afc515bad95def5e3047d816f73
 };
 
 const getUsersMeta = (request, response) => {
