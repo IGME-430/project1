@@ -1,9 +1,17 @@
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const url = require('url');
+
+const dbOperations = require('./dbOperations.js');
 const htmlHandler = require('./htmlResponses.js');
 const responseHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
+
+const options = {
+  key: fs.readFileSync(`${__dirname}/../src/key.pem`),
+  cert: fs.readFileSync(`${__dirname}/../src/cert.pem`),
+};
 
 // define dictionary of functions for easy reference from request
 const urlStruct = {
@@ -44,6 +52,10 @@ const onRequest = (request, response) => {
   }
 };
 
-http.createServer(onRequest).listen(port);
+https.createServer(options, onRequest).listen(port);
+
+const users = dbOperations.getUsers();
+
+console.log(users);
 
 console.log(`Listening on 127.0.0.1: ${port}`);

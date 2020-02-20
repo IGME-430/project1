@@ -6,7 +6,7 @@ const users = {};
 const messages = {
   200: {
     id: 'getUsers',
-    message: 'This is a getUsersful response',
+    message: 'This is a getUsers full response',
   },
   201: {
     id: 'create',
