@@ -10,14 +10,14 @@ const connectionPreferences = {
     user: 'igme430-admin',
     password: 'igme430-admin',
     database: 'igme430',
-    port: '3306',
+    port: 3306,
   },
   other: {
     host: 'kleynhans.mooo.com',
     user: 'igme430-admin',
     password: 'igme430-admin',
     database: 'igme430',
-    port: '33066',
+    port: 33066,
   },
 };
 
