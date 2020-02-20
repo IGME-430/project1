@@ -1,15 +1,7 @@
 const http = require('http');
 // const https = require('https');
-<<<<<<< HEAD
 // const fs = require('fs');
 const url = require('url');
-
-=======
-const fs = require('fs');
-const url = require('url');
-
-const dbOperations = require('./dbOperations.js');
->>>>>>> 9b60cb8484bb5afc515bad95def5e3047d816f73
 const htmlHandler = require('./htmlResponses.js');
 const responseHandler = require('./jsonResponses.js');
 

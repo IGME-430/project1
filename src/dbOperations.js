@@ -41,18 +41,11 @@ const dbConnector = (hostPreferences) => {
   return connection;
 };
 
-<<<<<<< HEAD
 // cb defines a callback
 const openConnection = () => {
   let connection = null;
 
   if ((os.hostname() === 'ubuntulamp') || (os.hostname() === 'Acid-Alien')) {
-=======
-const openConnection = () => {
-  let connection = null;
-
-  if (os.hostname() === 'ubuntulamp') {
->>>>>>> 9b60cb8484bb5afc515bad95def5e3047d816f73
     connection = dbConnector(connectionPreferences.ubuntulamp);
   } else {
     connection = dbConnector(connectionPreferences.other);
@@ -61,7 +54,6 @@ const openConnection = () => {
   return connection;
 };
 
-<<<<<<< HEAD
 const processResult = (result, fields) => {
   const data = {
     queryData: result,
@@ -86,49 +78,10 @@ const getUsers = (query, callback) => {
           } else {
             callback(processResult(result, fields));
           }
-
-
-        //   if (queryErr) {
-        //     throw queryErr;
-        //   } else {
-        //
-        //     let data = {
-        //       'queryData': result,
-        //       'tableData': fields,
-        //     };
-        //
-        //     return callback(data);
-        //   }
         },
       );
     }
   });
-=======
-const getUsers = () => {
-  const con = openConnection();
-
-  const data = {
-    queryData: {},
-    tableData: {},
-  };
-
-  con.connect((connErr) => {
-    if (connErr) throw connErr;
-    con.query(
-      defaultQueries.select.t_users.all_users,
-      (queryErr, result, fields) => {
-        if (queryErr) throw queryErr;
-        data.queryData = result;
-        data.tableData = fields;
-        // console.log(result);
-        // console.log(fields);
-      },
-    );
-    // console.log("Connected");
-  });
-
-  return data;
->>>>>>> 9b60cb8484bb5afc515bad95def5e3047d816f73
 };
 
 module.exports = {
