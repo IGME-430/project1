@@ -10,14 +10,12 @@ const connectionPreferences = {
     user: 'igme430-admin',
     password: 'igme430-admin',
     database: 'igme430',
-    port: 3306,
   },
   other: {
-    host: 'kleynhans.mooo.com',
-    user: 'igme430-admin',
-    password: 'igme430-admin',
-    database: 'igme430',
-    port: 33066,
+    host: 'us-cdbr-iron-east-04.cleardb.net/heroku_3db47b740946390',
+    user: 'bcffdfd87debd6',
+    password: 'bc7e6d6d',
+    database: 'heroku_3db47b740946390',
   },
 };
 
