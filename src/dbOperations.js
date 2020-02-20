@@ -33,7 +33,6 @@ const dbConnector = (hostPreferences) => {
     user: hostPreferences.user,
     password: hostPreferences.password,
     database: hostPreferences.database,
-    port: hostPreferences.port,
   });
 
   return connection;
