@@ -102,25 +102,14 @@ const addUser = (request, response) => {
 // return the users object
 const getUsers = (request, response) => {
   const responseJSON = {};
-  // let data = {};
 
   const sqlQuery = ['select', 't_users', 'all_users'];
 
-  dbOperations.getUsers(sqlQuery, (result) => {
-    // data = result;
-    // console.dir(data['queryData']);
-    // console.dir(data['tableData']);
+  dbOperations.getDefault(sqlQuery, (result) => {
     responseJSON.queryData = result.queryData;
-    responseJSON.tableData = result.tableData;
 
     respondJSON(request, response, 200, responseJSON);
   });
-
-  // const responseJSON = {
-  //   users,
-  // };
-
-  // respondJSON(request, response, 200, responseJSON);
 };
 
 const getUsersMeta = (request, response) => {
@@ -179,4 +168,6 @@ module.exports = {
   updatedMeta,
   notFound,
   notFoundMeta,
+  respondJSON,
+  respondJSONMeta,
 };

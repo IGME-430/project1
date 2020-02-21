@@ -43,7 +43,7 @@ const openConnection = () => {
   let connection = null;
 
   if ((os.hostname() === 'ubuntulamp') || (os.hostname() === 'Acid-Alien')) {
-    connection = dbConnector(connectionPreferences.ubuntulamp);
+    connection = dbConnector(connectionPreferences.other);
   } else {
     connection = dbConnector(connectionPreferences.other);
   }
@@ -60,7 +60,7 @@ const processResult = (result, fields) => {
   return data;
 };
 
-const getUsers = (query, callback) => {
+const getDefault = (queryParams, callback) => {
   const con = openConnection();
 
   con.connect((connErr) => {
@@ -68,7 +68,7 @@ const getUsers = (query, callback) => {
       throw connErr;
     } else {
       con.query(
-        defaultQueries[query[0]][query[1]][query[2]],
+        defaultQueries[queryParams[0]][queryParams[1]][queryParams[2]],
         (queryErr, result, fields) => {
           if (queryErr) {
             throw queryErr;
@@ -77,10 +77,35 @@ const getUsers = (query, callback) => {
           }
         },
       );
+      con.end();
+    }
+  });
+};
+
+const runQuery = (fullQuery, username, callback) => {
+  const con = openConnection();
+
+  con.connect((connErr) => {
+    if (connErr) {
+      throw connErr;
+    } else {
+      con.query(
+        fullQuery,
+        [username],
+        (queryErr, result, fields) => {
+          if (queryErr) {
+            throw queryErr;
+          } else {
+            callback(processResult(result, fields));
+          }
+        },
+      );
+      con.end();
     }
   });
 };
 
 module.exports = {
-  getUsers,
+  getDefault,
+  runQuery,
 };

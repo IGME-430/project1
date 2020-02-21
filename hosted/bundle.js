@@ -1,3 +1,89 @@
+const validateEmail = email => {
+  let mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
+  if (email.match(mailFormat)) {
+    return true;
+  } else {
+    alert("You have entered an invalid email address!");
+    return false;
+  }
+};
+
+const evaluateData = extractedData => {
+  let returnValue = false;
+
+  if (extractedData['form'] === 'login-form') {
+    if (extractedData['username'].length > 3) {
+      if (extractedData['password'].length > 0) {
+        returnValue = true;
+      }
+    }
+  } else if (extractedData['form'] === 'register-form') {
+    if (extractedData['name'].length > 1) {
+      if (extractedData['password'].length > 0) {
+        if (validateEmail(extractedData['email'])) {
+          returnValue = true;
+        }
+      }
+    }
+  }
+
+  return returnValue;
+}; // Extract the form data
+
+
+const formData = (activeForm, callback) => {
+  let extractedData = {
+    'form': activeForm.className
+  };
+  const formElements = activeForm.querySelectorAll('input');
+
+  switch (activeForm.className) {
+    case 'login-form':
+      extractedData['username'] = formElements[0].value;
+      extractedData['password'] = formElements[1].value;
+      break;
+
+    case 'register-form':
+      extractedData['name'] = formElements[0].value;
+      extractedData['password'] = formElements[1].value;
+      extractedData['email'] = formElements[2].value;
+      break;
+  }
+
+  if (evaluateData(extractedData)) {
+    callback(extractedData);
+  } else {
+    window.alert('The information you supplied is not valid or incorrect, please try again');
+  }
+}; // Initialize form elements
+
+
+const init = () => {
+  // Add animation to login screen
+  $('.message a').click(function () {
+    $('form').animate({
+      height: "toggle",
+      opacity: "toggle"
+    }, "slow");
+  }); // connect to forms
+
+  const loginForm = document.querySelector('.login-form');
+  const registerForm = document.querySelector('.register-form'); // create handlers to forms
+
+  const login = e => formData(loginForm, extractedData => {
+    sendPost(e, extractedData);
+  });
+
+  const register = e => formData(registerForm, extractedData => {
+    sendPost(e, extractedData);
+  });
+
+  loginForm.addEventListener('submit', login);
+  registerForm.addEventListener('submit', register);
+};
+
+window.onload = init;
 // Process and construct the JSON data
 const parseJSON = (xhr, content) => {
   // parse response
@@ -18,6 +104,22 @@ const parseJSON = (xhr, content) => {
       userList.textContent = users;
       content.appendChild(userList);
     }
+
+    if (obj.login) {
+      if (obj.login === 'successful') {
+        // construct the XHR request
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/getGpaInfo'); // set headers
+
+        xhr.setRequestHeader('Accept', 'application/json'); // configure callback
+
+        xhr.onload = () => handleResponse(xhr, true); // send request
+
+
+        xhr.send();
+        return false;
+      }
+    }
   } catch (e) {
     return false;
   }
@@ -25,31 +127,41 @@ const parseJSON = (xhr, content) => {
 
 
 const handleResponse = xhr => {
-  const content = document.querySelector('#content');
+  const content = null; //document.querySelector('#content');
 
   switch (xhr.status) {
     case 200:
-      content.innerHTML = '<b>Success</b>';
+      console.log('Success'); // content.innerHTML = '<b>Success</b>';
+
       break;
 
     case 201:
-      content.innerHTML = '<b>Create</b>';
+      console.log('Created'); // content.innerHTML = '<b>Create</b>';
+
       break;
 
     case 204:
-      content.innerHTML = '<b>Updated (No Content)</b>';
+      console.log('Updated (No Content)'); // content.innerHTML = '<b>Updated (No Content)</b>';
+
       break;
 
     case 400:
-      content.innerHTML = '<b>Bad Request</b>';
+      console.log('Bad Request'); // content.innerHTML = '<b>Bad Request</b>';
+
+      break;
+
+    case 401:
+      console.log('User Not Authorized');
       break;
 
     case 404:
-      content.innerHTML = '<b>Resource Not Found</b>';
+      console.log('Resource Not Found'); // content.innerHTML = '<b>Resource Not Found</b>';
+
       break;
 
     default:
-      content.innerHTML = 'Error code not implemented by client.';
+      console.log('Error code not implemented by client.'); // content.innerHTML = '<b>Error code not implemented by client.</b>';
+
       break;
   }
 
@@ -57,39 +169,49 @@ const handleResponse = xhr => {
 }; // Set up and send the POST request
 
 
-const sendPost = (e, nameForm) => {
-  e.preventDefault(); // get the form attribute values
+const sendPost = (e, data) => {
+  e.preventDefault(); // construct the XHR request
 
-  const nameAction = nameForm.getAttribute('action');
-  const nameMethod = nameForm.getAttribute('method'); // get the form input values
+  const xhr = new XMLHttpRequest(); // define query parameter variable for completion in switch
 
-  const nameField = nameForm.querySelector('#nameField');
-  const ageField = nameForm.querySelector('#ageField'); // construct the XHR request
+  let formData;
 
-  const xhr = new XMLHttpRequest();
-  xhr.open(nameMethod, nameAction); // set headers
+  if (data['form'] === 'login-form' || data['form'] === 'register-form') {
+    xhr.open('POST', '/login');
+  }
+
+  switch (data['form']) {
+    case 'login-form':
+      // append query parameters
+      formData = `username=${data['username']}&password=${data['password']}`;
+      break;
+
+    case 'register-form':
+      // append query parameters
+      formData = `username=${data['username']}&password=${data['password']}&email=${data['email']}`;
+      break;
+  } // set headers
+
 
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.setRequestHeader('Accept', 'application/json'); // configure callback
 
-  xhr.onload = () => handleResponse(xhr); // append query parameters
+  xhr.onload = () => handleResponse(xhr); // send request
 
-
-  const formData = `name=${nameField.value}&age=${ageField.value}`; // send request
 
   xhr.send(formData);
   return false;
 }; // Set up and send the AJAX request
 
 
-const sendAjax = e => {
-  e.preventDefault(); // get parameters from form
-
-  const url = document.querySelector('#urlField').value;
-  const method = document.querySelector('#methodSelect').value; // construct the XHR request
+const sendAjax = (e, url) => {
+  e.preventDefault(); // // get parameters from form
+  // const url = document.querySelector('#urlField').value;
+  // const method = document.querySelector('#methodSelect').value;
+  // construct the XHR request
 
   const xhr = new XMLHttpRequest();
-  xhr.open(method, url); // set headers
+  xhr.open('GET', url); // set headers
 
   xhr.setRequestHeader('Accept', 'application/json'); // configure callback
 
@@ -98,27 +220,4 @@ const sendAjax = e => {
 
   xhr.send();
   return false;
-}; // Initialize form elements
-
-
-const init = () => {
-  // connect to forms
-  const nameForm = document.querySelector('#nameForm');
-  const userForm = document.querySelector('#userForm'); // create handlers to forms
-
-  const addUser = e => sendPost(e, nameForm);
-
-  const getUser = e => sendAjax(e); // attach submit event (for clicking submit or hitting enter)
-
-
-  nameForm.addEventListener('submit', addUser);
-  userForm.addEventListener('submit', getUser);
 };
-
-window.onload = init;
-$('.message a').click(function () {
-  $('form').animate({
-    height: "toggle",
-    opacity: "toggle"
-  }, "slow");
-});

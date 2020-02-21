@@ -3,26 +3,32 @@
 <head>
   <title>Our simple HTTP server</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" type="text/css" href="./style.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
   <script src="/bundle.js"></script>
 </head>
 <body>
-<div class="login-page">
-  <div class="form">
-    <form class="register-form">
-      <input type="text" placeholder="name"/>
-      <input type="password" placeholder="password"/>
-      <input type="text" placeholder="email address"/>
-      <button>create</button>
-      <p class="message">Already registered? <a href="#">Sign In</a></p>
+  <section id="top">
+    <h3>POST Status Code Tests</h3>
+    <form id="nameForm" action="/addUser" method="post">
+      <label for="name">Name: </label>
+      <input id="nameField" type="text" name="name" />
+      <label for="age">Age: </label>
+      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
+      <input type="submit" value="Add User" />
     </form>
-    <form class="login-form">
-      <input type="text" placeholder="username"/>
-      <input type="password" placeholder="password"/>
-      <button>login</button>
-      <p class="message">Not registered? <a href="#">Create an account</a></p>
+    <form id="userForm" action="/getUsers" method="get">
+      <select id='urlField'>
+        <option value='/getUsers'>/getUsers</option>
+        <option value='/notReal'>/notReal</option>
+      </select>
+      <select id="methodSelect">
+        <option value="get">GET</option>
+        <option value="head">HEAD</option>
+      </select>
+      <input type="submit" value="Send" />
     </form>
-  </div>
-</div>
+  </section>
+  <section id="content">
+  </section>
 </body>
 </html>

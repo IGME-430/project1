@@ -4,6 +4,7 @@ const http = require('http');
 const url = require('url');
 const htmlHandler = require('./htmlResponses.js');
 const responseHandler = require('./jsonResponses.js');
+const authHandler = require('./authServer.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
@@ -15,8 +16,11 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 // define dictionary of functions for easy reference from request
 const urlStruct = {
   GET: {
-    '/': htmlHandler.getIndex,
-    '/style.css': htmlHandler.getCSS,
+    '/': htmlHandler.getLogin,
+    '/getGpaInfo': htmlHandler.getGpaInfo,
+    '/normalize.css': htmlHandler.getNormalizeCSS,
+    '/skeleton.css': htmlHandler.getSkeletonCSS,
+    '/style.css': htmlHandler.getStyleCSS,
     '/bundle.js': htmlHandler.getBundle,
     '/getUsers': responseHandler.getUsers,
     '/create': responseHandler.create,
@@ -34,6 +38,7 @@ const urlStruct = {
     notFound: responseHandler.notFoundMeta,
   },
   POST: {
+    '/login': authHandler.login,
     '/addUser': responseHandler.addUser,
     notFound: responseHandler.notFound,
   },
