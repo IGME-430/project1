@@ -23,6 +23,8 @@ const urlStruct = {
     '/style.css': htmlHandler.getStyleCSS,
     '/bundle.js': htmlHandler.getBundle,
     '/getUsers': responseHandler.getUsers,
+    '/getData': responseHandler.getData,
+    '/getCourses': responseHandler.getCourses,
     '/create': responseHandler.create,
     '/updated': responseHandler.updated,
     '/badRequest': responseHandler.badRequest,
@@ -40,7 +42,7 @@ const urlStruct = {
   POST: {
     // '/login': authHandler.login,
     '/processRequest': authHandler.processRequest,
-    '/addUser': responseHandler.addUser,
+    // '/addUser': responseHandler.addUser,
     notFound: responseHandler.notFound,
   },
 };

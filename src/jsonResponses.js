@@ -120,6 +120,38 @@ const getUsersMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
 };
 
+const getData = (request, response) => {
+  const responseJSON = {};
+
+  const sqlQuery = ['select', 't_data', 'all_data'];
+
+  dbOperations.getDefault(sqlQuery, (result) => {
+    responseJSON.queryData = result.queryData;
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+const getDataMeta = (request, response) => {
+  respondJSONMeta(request, response, 200, messages[200]);
+};
+
+const getCourses = (request, response) => {
+  const responseJSON = {};
+
+  const sqlQuery = ['select', 't_courses', 'all_courses'];
+
+  dbOperations.getDefault(sqlQuery, (result) => {
+    responseJSON.queryData = result.queryData;
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+const getCoursesMeta = (request, response) => {
+  respondJSONMeta(request, response, 200, messages[200]);
+};
+
 const created = (request, response) => {
   respondJSON(request, response, 201, messages[201]);
 };
@@ -180,6 +212,10 @@ module.exports = {
   addUser,
   getUsers,
   getUsersMeta,
+  getData,
+  getDataMeta,
+  getCourses,
+  getCoursesMeta,
   created,
   createdMeta,
   badRequest,
