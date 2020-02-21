@@ -38,7 +38,8 @@ const urlStruct = {
     notFound: responseHandler.notFoundMeta,
   },
   POST: {
-    '/login': authHandler.login,
+    // '/login': authHandler.login,
+    '/processRequest': authHandler.processRequest,
     '/addUser': responseHandler.addUser,
     notFound: responseHandler.notFound,
   },

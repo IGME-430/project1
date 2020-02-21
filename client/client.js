@@ -22,9 +22,10 @@ const parseJSON = (xhr, content) => {
 
     if (obj.login) {
       if (obj.login === 'successful') {
+        // window.open(xhr.responseURL);
         // construct the XHR request
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/getGpaInfo');
+        xhr.open('GET', '/getGpaInfo', true);
 
         // set headers
         xhr.setRequestHeader('Accept', 'application/json');
@@ -61,6 +62,10 @@ const handleResponse = (xhr) => {
       console.log('Updated (No Content)');
       // content.innerHTML = '<b>Updated (No Content)</b>';
       break;
+    case 302:
+      console.log('Redirecting');
+      // content.innerHTML = '<b>Updated (No Content)</b>';
+      break;
     case 400:
       console.log('Bad Request');
       // content.innerHTML = '<b>Bad Request</b>';
@@ -92,16 +97,18 @@ const sendPost = (e, data) => {
   let formData;
 
   if ((data['form'] === 'login-form') || (data['form'] === 'register-form')) {
-    xhr.open('POST', '/login');
+    xhr.open('POST', '/processRequest');
   }
 
   switch (data['form']) {
     case 'login-form':
+      // xhr.open('POST', '/login');
       // append query parameters
       formData = `username=${data['username']}&password=${data['password']}`;
 
       break;
     case 'register-form':
+      // xhr.open('POST', '/register');
       // append query parameters
       formData = `username=${data['username']}&password=${data['password']}&email=${data['email']}`;
 

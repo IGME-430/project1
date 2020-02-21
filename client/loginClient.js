@@ -17,14 +17,14 @@ const evaluateData = (extractedData) => {
   let returnValue = false;
 
   if (extractedData['form'] === 'login-form') {
-    if (extractedData['username'].length > 3) {
+    if (extractedData['username'].length > 1) {
       if (extractedData['password'].length > 0) {
         returnValue = true;
       }
     }
   }
   else if (extractedData['form'] === 'register-form') {
-    if (extractedData['name'].length > 1) {
+    if (extractedData['username'].length > 1) {
       if (extractedData['password'].length > 0) {
         if (validateEmail(extractedData['email'])) {
           returnValue = true;
@@ -52,7 +52,7 @@ const formData = (activeForm, callback) => {
 
       break;
     case 'register-form':
-      extractedData['name'] = formElements[0].value;
+      extractedData['username'] = formElements[0].value;
       extractedData['password'] = formElements[1].value;
       extractedData['email'] = formElements[2].value;
 

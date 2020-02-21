@@ -105,7 +105,59 @@ const runQuery = (fullQuery, username, callback) => {
   });
 };
 
+const insertUser = (fullQuery, args, callback) => {
+  const con = openConnection();
+
+  const values = [[args.username, args.email]];
+
+  con.connect((connErr) => {
+    if (connErr) {
+      throw connErr;
+    } else {
+      con.query(
+        fullQuery,
+        [values],
+        (queryErr, result, fields) => {
+          if (queryErr) {
+            throw queryErr;
+          } else {
+            callback(processResult(result, fields));
+          }
+        },
+      );
+      con.end();
+    }
+  });
+};
+
+const insertPassword = (fullQuery, args, callback) => {
+  const con = openConnection();
+
+  const values = [[args.userid, args.password]];
+
+  con.connect((connErr) => {
+    if (connErr) {
+      throw connErr;
+    } else {
+      con.query(
+        fullQuery,
+        [values],
+        (queryErr, result, fields) => {
+          if (queryErr) {
+            throw queryErr;
+          } else {
+            callback(processResult(result, fields));
+          }
+        },
+      );
+      con.end();
+    }
+  });
+};
+
 module.exports = {
   getDefault,
   runQuery,
+  insertUser,
+  insertPassword,
 };

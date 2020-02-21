@@ -23,6 +23,14 @@ const getGpaInfo = (request, response) => {
   response.end();
 };
 
+// Set up response to honor index request
+const getGpaInfoRedirect = (request, response) => {
+  console.log('sending gpa redirect');
+  response.writeHead(302, { 'Content-Type': 'text/html' });
+  response.write(gpaInfo);
+  response.end();
+};
+
 // Set up response to honor css request
 const getNormalizeCSS = (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/css' });
@@ -54,6 +62,7 @@ const getBundle = (request, response) => {
 module.exports = {
   getLogin,
   getGpaInfo,
+  getGpaInfoRedirect,
   getNormalizeCSS,
   getSkeletonCSS,
   getStyleCSS,

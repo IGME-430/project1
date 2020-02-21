@@ -25,6 +25,10 @@ const messages = {
     id: 'notFound',
     message: 'The page you are looking for was not found.',
   },
+  409: {
+    id: 'conflict',
+    message: 'The specified username already exists.',
+  },
   501: {
     id: 'notImplemented',
     message: 'A get request for this page has not been implemented yet.  Check again later for updated content.',
@@ -116,11 +120,11 @@ const getUsersMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
 };
 
-const create = (request, response) => {
+const created = (request, response) => {
   respondJSON(request, response, 201, messages[201]);
 };
 
-const createMeta = (request, response) => {
+const createdMeta = (request, response) => {
   respondJSONMeta(request, response, 201, messages[201]);
 };
 
@@ -148,20 +152,36 @@ const badRequestMeta = (request, response) => {
   respondJSONMeta(request, response, 400, messages[400]);
 };
 
-const notFound = (request, response) => {
-  respondJSON(request, response, 404, messages[404]);
+const notFound = (request, response, attribute) => {
+  let message = '';
+
+  if (attribute === 'user') {
+    message = 'The specified user does not exist';
+  } else {
+    message = messages[404].message;
+  }
+
+  respondJSON(request, response, 404, message);
 };
 
-const notFoundMeta = (request, response) => {
-  respondJSONMeta(request, response, 404, messages[404]);
+const notFoundMeta = (request, response, attribute) => {
+  let message = '';
+
+  if (attribute === 'user') {
+    message = 'The specified user does not exist';
+  } else {
+    message = messages[404].message;
+  }
+
+  respondJSONMeta(request, response, 404, message);
 };
 
 module.exports = {
   addUser,
   getUsers,
   getUsersMeta,
-  create,
-  createMeta,
+  created,
+  createdMeta,
   badRequest,
   badRequestMeta,
   updated,
