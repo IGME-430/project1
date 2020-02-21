@@ -25,11 +25,11 @@ const defaultQueries = {
       all_users: 'SELECT username, email FROM t_users;',
     },
     t_data: {
-      all_data: 'SELECT t_courses.course_id, t_data.grade ' +
-        'FROM t_data ' +
-        'INNER JOIN t_courses ' +
-        'ON t_data.course_id = t_courses.t_id ' +
-        'ORDER BY t_data.course_id ASC;',
+      all_data: 'SELECT t_courses.course_id, t_data.grade '
+        + 'FROM t_data '
+        + 'INNER JOIN t_courses '
+        + 'ON t_data.course_id = t_courses.t_id '
+        + 'ORDER BY t_data.course_id ASC;',
     },
     t_courses: {
       all_courses: 'SELECT course_id, course_name, description FROM t_courses',
