@@ -31,6 +31,8 @@
     "nodemon": "^2.0.2"
   },
   "dependencies": {
-    "mysql": "^2.18.1"
+    "material-design-lite": "^1.3.0",
+    "mysql": "^2.18.1",
+    "vue-components": "^1.0.4"
   }
 }

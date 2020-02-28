@@ -2,38 +2,30 @@
 const parseJSON = (xhr, content) => {
   // parse response
   try {
+    const statusCode = xhr.status;
     const obj = JSON.parse(xhr.response);
-    console.dir(obj); // if response contains message, display it
 
-    if (obj.message) {
-      const p = document.createElement('p');
-      p.textContent = `Message: ${obj.message}`;
-      content.appendChild(p);
-    } // if response contains user info, display it
+    if (statusCode !== 302) {
+      console.dir(obj); // if response contains message, display it
 
-
-    if (obj.users) {
-      const userList = document.createElement('p');
-      const users = JSON.stringify(obj.users);
-      userList.textContent = users;
-      content.appendChild(userList);
-    }
-
-    if (obj.login) {
-      if (obj.login === 'successful') {
-        // window.open(xhr.responseURL);
-        // construct the XHR request
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/getGpaInfo', true); // set headers
-
-        xhr.setRequestHeader('Accept', 'application/json'); // configure callback
-
-        xhr.onload = () => handleResponse(xhr, true); // send request
+      if (obj.message) {
+        const p = document.createElement('p');
+        p.textContent = `Message: ${obj.message}`;
+        content.appendChild(p);
+      } // if response contains user info, display it
 
 
-        xhr.send();
-        return false;
+      if (obj.users) {
+        const userList = document.createElement('p');
+        const users = JSON.stringify(obj.users);
+        userList.textContent = users;
+        content.appendChild(userList);
       }
+    } else {
+      let tempData = JSON.parse(obj);
+      window.location.replace(`${tempData['destination']}?username:${tempData['arguments'].username}&
+enrollmentData:${JSON.stringify(tempData.enrollmentData.data[0])}&
+courseIndices:${JSON.stringify(tempData.courseIndices.data[0])}`);
     }
   } catch (e) {
     return false;
@@ -143,7 +135,6 @@ const sendAjax = (e, url) => {
   xhr.send();
   return false;
 };
-
 const validateEmail = email => {
   let mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -206,7 +197,8 @@ const formData = (activeForm, callback) => {
 
 
 const init = () => {
-  // Add animation to login screen
+  document.cookie = ''; // Add animation to login screen
+
   $('.message a').click(function () {
     $('form').animate({
       height: "toggle",

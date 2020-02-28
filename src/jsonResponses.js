@@ -21,6 +21,10 @@ const messages = {
     id: 'badRequest',
     message: 'Name and age are both required',
   },
+  401: {
+    id: 'unauthorized',
+    message: 'Password supplied is incorrect.  You are not authorized to access this data.',
+  },
   404: {
     id: 'notFound',
     message: 'The page you are looking for was not found.',

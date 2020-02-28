@@ -1,17 +1,18 @@
 const query = require('querystring');
 const dbOperations = require('./dbOperations.js');
 const jsonHandler = require('./jsonResponses.js');
+const htmlHandler = require('./htmlResponses.js');
 
 const login = (request, response, bodyString, bodyParams) => {
   const responseJSON = {};
 
   const sqlQueryDict = {
-    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND status = 1',
+    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND active = 1',
     valid: 'SELECT password '
         + 'FROM t_passwords '
         + 'INNER JOIN t_users '
         + 'ON t_passwords.user_id = t_users.t_id '
-        + 'WHERE t_users.username = ? AND t_users.status = 1',
+        + 'WHERE t_users.username = ? AND t_users.active = 1',
   };
 
   dbOperations.runQuery(sqlQueryDict.exists, bodyParams.username, (userQuery) => {
@@ -22,9 +23,29 @@ const login = (request, response, bodyString, bodyParams) => {
         responseJSON.userPassword = passwordQuery.queryData;
 
         if (responseJSON.userPassword[0].password === bodyParams.password) {
-          jsonHandler.respondJSON(request, response, 200, { login: 'successful' });
+          // dbOperations.buildResponse();
+          let dataQuery = 'CALL completed_courses(?)';
+
+          const bulkData = {
+            arguments: {
+              username: bodyParams.username,
+            },
+          };
+
+          dbOperations.runStoredProcedure(dataQuery, bodyParams, (enrollmentData) => {
+            bulkData.enrollmentData = enrollmentData;
+
+            dataQuery = 'CALL course_indices()';
+            dbOperations.runStoredProcedure(dataQuery, bodyParams, (courseIndices) => {
+              bulkData.courseIndices = courseIndices;
+
+              htmlHandler.getGpaDataRedirect(request, response, JSON.stringify(bulkData));
+            });
+
+            // htmlHandler.getGpaDataRedirect(request, response, JSON.stringify(data));
+          });
         } else {
-          jsonHandler.respondJSONMeta(request, response, 401, jsonHandler.messages[401]);
+          jsonHandler.respondJSONMeta(request, response, 401);
         }
       });
     } else {
@@ -37,7 +58,7 @@ const register = (request, response, bodyString, bodyParams) => {
   const responseJSON = {};
 
   const sqlQueryDict = {
-    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND status = 1',
+    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND active = 1',
     notExists: {
       insertUser: 'INSERT INTO t_users(username, email) VALUES ?',
       insertPassword: 'INSERT INTO t_passwords(user_id, password) VALUES ?',
@@ -46,7 +67,7 @@ const register = (request, response, bodyString, bodyParams) => {
         + 'FROM t_passwords '
         + 'INNER JOIN t_users '
         + 'ON t_passwords.user_id = t_users.t_id '
-        + 'WHERE t_users.username = ? AND t_users.status = 1',
+        + 'WHERE t_users.username = ? AND t_users.active = 1',
   };
 
   dbOperations.runQuery(sqlQueryDict.exists, bodyParams.username, (userQuery) => {

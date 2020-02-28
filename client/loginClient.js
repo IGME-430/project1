@@ -69,6 +69,9 @@ const formData = (activeForm, callback) => {
 
 // Initialize form elements
 const init = () => {
+
+  document.cookie = '';
+
   // Add animation to login screen
   $('.message a').click(function(){
     $('form').animate({height: "toggle", opacity: "toggle"}, "slow");

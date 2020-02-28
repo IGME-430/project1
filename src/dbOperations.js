@@ -34,6 +34,9 @@ const defaultQueries = {
     t_courses: {
       all_courses: 'SELECT course_id, course_name, description FROM t_courses',
     },
+    t_gpa_scale: {
+      scale: 'SELECT grade_letter, numeric_value FROM t_gpa_scale',
+    },
   },
 };
 
@@ -165,9 +168,42 @@ const insertPassword = (fullQuery, args, callback) => {
   });
 };
 
+const runStoredProcedure = (fullQuery, args, callback) => {
+  const con = openConnection();
+
+  con.connect((connErr) => {
+    if (connErr) {
+      throw connErr;
+    } else {
+      con.query(
+        fullQuery,
+        [args.username],
+        (queryErr, result, fields) => {
+          if (queryErr) {
+            throw queryErr;
+          } else {
+            callback(
+              {
+                data: processResult(result, fields).queryData,
+              },
+            );
+          }
+        },
+      );
+      con.end();
+    }
+  });
+};
+
+const buildResponse = () => {
+
+};
+
 module.exports = {
   getDefault,
   runQuery,
   insertUser,
   insertPassword,
+  runStoredProcedure,
+  buildResponse,
 };
