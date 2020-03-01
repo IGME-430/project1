@@ -58,7 +58,7 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-// const processEnrollment = (request, response, bodyParams) => {
+// Add a new course to an existing user
 const processEnrollment = (request, response, bodyParams) => {
   const responseJSON = {};
 
@@ -68,6 +68,7 @@ const processEnrollment = (request, response, bodyParams) => {
     respondJSON(request, response, 400, messages[400].message);
   }
 
+  // add a new course to an existing user
   dbOperations.insertEnrollment(bodyParams, (callback) => {
     if (callback.id === 200) {
       responseJSON.message = 'Created Successfully';
@@ -79,6 +80,7 @@ const processEnrollment = (request, response, bodyParams) => {
   });
 };
 
+// Update course details for a course already registered to an existing user
 const updateEnrollment = (request, response, bodyParams) => {
   const responseJSON = {};
 
@@ -99,7 +101,7 @@ const updateEnrollment = (request, response, bodyParams) => {
   });
 };
 
-// Add enrollment
+// Process a request received from a user based on the operation specified
 const processUserData = (request, response) => {
   const res = response;
   const body = [];
@@ -146,10 +148,12 @@ const getUsers = (request, response) => {
   });
 };
 
+// return the meta object for users
 const getUsersMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
 };
 
+// return all data from the database
 const getData = (request, response) => {
   const responseJSON = {};
 
@@ -162,30 +166,37 @@ const getData = (request, response) => {
   });
 };
 
+// return data meta
 const getDataMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
 };
 
+// return courses meta
 const getCoursesMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
 };
 
+// return created message
 const created = (request, response) => {
   respondJSON(request, response, 201, messages[201]);
 };
 
+// return created meta
 const createdMeta = (request, response) => {
   respondJSONMeta(request, response, 201, messages[201]);
 };
 
+// return updated message (code 204 does not provide the option to send a message)
 const updated = (request, response) => {
-  respondJSON(request, response, 204, messages[204]);
+  respondJSON(request, response, 204, '');
 };
 
+// return updated meta (code 204 does not provide the option to send a message)
 const updatedMeta = (request, response) => {
-  respondJSONMeta(request, response, 204, messages[204]);
+  respondJSONMeta(request, response, 204, '');
 };
 
+// return bad request message
 const badRequest = (request, response, parsedUrl) => {
   let returnValue;
 
@@ -198,10 +209,12 @@ const badRequest = (request, response, parsedUrl) => {
   return returnValue;
 };
 
+// return bad request meta
 const badRequestMeta = (request, response) => {
   respondJSONMeta(request, response, 400, messages[400]);
 };
 
+// return not found message
 const notFound = (request, response, attribute) => {
   let message = '';
 
@@ -214,6 +227,7 @@ const notFound = (request, response, attribute) => {
   respondJSON(request, response, 404, message);
 };
 
+// return not found meta
 const notFoundMeta = (request, response, attribute) => {
   let message = '';
 
@@ -226,6 +240,7 @@ const notFoundMeta = (request, response, attribute) => {
   respondJSONMeta(request, response, 404, message);
 };
 
+// return the full set of course details from the query
 const getCourseDetails = (request, response) => {
   const responseJSON = {};
 
@@ -237,6 +252,12 @@ const getCourseDetails = (request, response) => {
   });
 };
 
+// return course details meta
+const getCourseDetailsMeta = (request, response) => {
+  respondJSON(request, response, 200, 'Course detail query processed');
+};
+
+// return information about all classes the current user is enrolled for
 const getEnrollmentDetails = (request, response) => {
   const responseJSON = {};
 
@@ -248,6 +269,12 @@ const getEnrollmentDetails = (request, response) => {
   });
 };
 
+// return enrollment details meta
+const getEnrollmentDetailsMeta = (request, response) => {
+  respondJSON(request, response, 200, 'Course enrollment query processed');
+};
+
+// get the predefined list of possible grade values
 const getGradeValues = (request, response) => {
   const responseJSON = {};
 
@@ -259,6 +286,12 @@ const getGradeValues = (request, response) => {
   });
 };
 
+// return grade values meta
+const getGradeValuesMeta = (request, response) => {
+  respondJSON(request, response, 200, 'Grade values query processed');
+};
+
+// get the predefined list of possible status values
 const getStatusValues = (request, response) => {
   const responseJSON = {};
 
@@ -270,6 +303,12 @@ const getStatusValues = (request, response) => {
   });
 };
 
+// return status values meta
+const getStatusValuesMeta = (request, response) => {
+  respondJSON(request, response, 200, 'Status values query processed');
+};
+
+// get the predefined list of possible gpa values from the 4.0 scale
 const getGpaScale = (request, response) => {
   const responseJSON = {};
 
@@ -279,6 +318,11 @@ const getGpaScale = (request, response) => {
 
     respondJSON(request, response, 200, responseJSON);
   });
+};
+
+// return gpa values meta
+const getGpaScaleMeta = (request, response) => {
+  respondJSON(request, response, 200, 'GPA scale values query processed');
 };
 
 // Export locally defined functions for external use
@@ -300,8 +344,13 @@ module.exports = {
   respondJSON,
   respondJSONMeta,
   getCourseDetails,
+  getCourseDetailsMeta,
   getEnrollmentDetails,
+  getEnrollmentDetailsMeta,
   getGradeValues,
+  getGradeValuesMeta,
   getStatusValues,
+  getStatusValuesMeta,
   getGpaScale,
+  getGpaScaleMeta,
 };

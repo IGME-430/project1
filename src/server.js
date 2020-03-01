@@ -38,6 +38,11 @@ const urlStruct = {
     '/updated': jsonResponseHandler.updatedMeta,
     '/badRequest': jsonResponseHandler.badRequestMeta,
     '/notImplemented': jsonResponseHandler.notImplementedMeta,
+    '/getCourseDetails': jsonResponseHandler.getCourseDetailsMeta,
+    '/getEnrollmentDetails': jsonResponseHandler.getEnrollmentDetailsMeta,
+    '/getGradeValues': jsonResponseHandler.getGradeValuesMeta,
+    '/getStatusValues': jsonResponseHandler.getStatusValuesMeta,
+    '/getGpaScale': jsonResponseHandler.getGpaScaleMeta,
     notFound: jsonResponseHandler.notFoundMeta,
   },
   POST: {
