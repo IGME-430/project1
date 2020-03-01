@@ -66,6 +66,8 @@ const populateStatuses = (element) => {
 
     element.appendChild(opt);
   });
+
+  element.selectedIndex = 2;
 };
 
 // Update the course description based on the course id selected
