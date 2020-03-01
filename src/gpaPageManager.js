@@ -39,8 +39,8 @@ const populateCourseIds = (element) => {
 const populateGrades = (element) => {
   Object.values(grades).forEach((value) => {
     const opt = document.createElement('option');
-    opt.value = value;
-    opt.innerHTML = value;
+    opt.value = value.val;
+    opt.innerHTML = value.val;
 
     element.appendChild(opt);
   });
@@ -49,8 +49,8 @@ const populateGrades = (element) => {
 const populateStatuses = (element) => {
   Object.values(statuses).forEach((value) => {
     const opt = document.createElement('option');
-    opt.value = value;
-    opt.innerHTML = value;
+    opt.value = value.val;
+    opt.innerHTML = value.val;
 
     element.appendChild(opt);
   });
