@@ -33,6 +33,7 @@ const getDataStyleCSS = (request, response) => {
   response.end();
 };
 
+// Export locally defined functions for external use
 module.exports = {
   getNormalizeCSS,
   getSkeletonCSS,
