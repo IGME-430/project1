@@ -64,10 +64,12 @@ const populateStatuses = (element) => {
     opt.value = value.val;
     opt.innerHTML = value.val;
 
+    if (value.val === 'In Progress') {
+      opt.selected = true;
+    }
+
     element.appendChild(opt);
   });
-
-  element.selectedIndex = 2;
 };
 
 // Update the course description based on the course id selected
