@@ -29,6 +29,7 @@ const urlStruct = {
     '/getEnrollmentDetails': jsonResponseHandler.getEnrollmentDetails,
     '/getGradeValues': jsonResponseHandler.getGradeValues,
     '/getStatusValues': jsonResponseHandler.getStatusValues,
+    '/getGpaScale': jsonResponseHandler.getGpaScale,
     notFound: jsonResponseHandler.notFound,
   },
   HEAD: {

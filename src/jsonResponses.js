@@ -278,6 +278,17 @@ const getStatusValues = (request, response) => {
   });
 };
 
+const getGpaScale = (request, response) => {
+  const responseJSON = {};
+
+  dbOperations.getGpaScale((result) => {
+    responseJSON.queryData = result.data.queryData;
+    responseJSON.message = 'gpaScale';
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
 
 module.exports = {
   processUserData,
@@ -300,4 +311,5 @@ module.exports = {
   getEnrollmentDetails,
   getGradeValues,
   getStatusValues,
+  getGpaScale,
 };

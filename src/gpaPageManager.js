@@ -7,7 +7,12 @@ let enrollmentData = {};
 let courseIndices = {};
 let grades = {};
 let statuses = {};
+let gpaScale = {};
 const pointersBusy = {};
+const studentGpa = {
+  numericValue: 0,
+  letterGrades: [],
+};
 
 const noLongerBusy = () => {
   let returnValue = true;
@@ -61,6 +66,43 @@ const setCourseDescription = () => {
   });
 };
 
+const convertToNumber = (gradeLetter) => {
+  let letterValue = 0;
+
+  for (let i = 0; i < gpaScale.length; i++) {
+    if (gpaScale[i].grade_letter === gradeLetter) {
+      letterValue = gpaScale[i].numeric_value;
+      break;
+    }
+  }
+
+  return letterValue;
+};
+
+const calculateGpa = () => {
+  let cumulativeValue = 0;
+
+  studentGpa.letterGrades = [];
+
+  Object.values(enrollmentData).forEach((value) => {
+    if (value.status === 'Completed') {
+      studentGpa.letterGrades.push(value.grade);
+    }
+  });
+
+  for (let i = 0; i < studentGpa.letterGrades.length; i++) {
+    if (studentGpa.letterGrades[i] !== 'S') {
+      cumulativeValue += convertToNumber(studentGpa.letterGrades[i]);
+    } else {
+      cumulativeValue += 4;
+    }
+  }
+
+  studentGpa.numericValue = cumulativeValue / studentGpa.letterGrades.length;
+
+  document.querySelector('#gpa-indicator').innerHTML = `- GPA ${studentGpa.numericValue.toFixed(2)}`;
+};
+
 const populateEnrollment = () => {
   const tableTable = document.querySelector('#enrollment-table');
 
@@ -83,6 +125,8 @@ const populateEnrollment = () => {
 
     tableTable.appendChild(tableRow);
   });
+
+  setTimeout(calculateGpa, 1000);
 };
 
 const addCourseHeadings = (tableTable) => {
@@ -135,8 +179,7 @@ const parseJSON = (xhr, content) => {
             enrollmentData = obj.queryData;
 
             populateEnrollment();
-            const tableHolder = document.querySelector('#enrollment-table');
-            addCourseHeadings(tableHolder);
+            addCourseHeadings(document.querySelector('#enrollment-table'));
             pointersBusy.enrollmentDetails = false;
 
             break;
@@ -159,17 +202,26 @@ const parseJSON = (xhr, content) => {
 
             break;
           }
+          case 'gpaScale': {
+            gpaScale = obj.queryData;
+
+            pointersBusy.gpaScale = false;
+
+            break;
+          }
           default:
             break;
         }
 
         break;
-      case 201:
+      case 201: {
         enrollmentData = obj.data;
         populateEnrollment();
         addCourseHeadings(document.querySelector('#enrollment-table'));
+        pointersBusy.enrollmentDetails = false;
 
         break;
+      }
       case 302:
       case 401:
       case 409:
@@ -303,6 +355,12 @@ const updateDictionary = (type, callback) => {
       callback();
 
       break;
+    case 'gpaScale':
+      pointersBusy.gpaScale = true;
+      sendAjax('/getGpaScale');
+      callback();
+
+      break;
     default:
       break;
   }
@@ -415,6 +473,9 @@ const addInputFields = (userDataReference) => {
   courseIdSelect.id = 'course-id';
   courseIdSelect.addEventListener('change', setCourseDescription);
 
+  const gpaIndicator = document.createElement('label');
+  gpaIndicator.id = 'gpa-indicator';
+
   const userIndicator = document.createElement('label');
   userIndicator.id = 'user-indicator';
   userIndicator.innerHTML = username;
@@ -459,6 +520,7 @@ const addInputFields = (userDataReference) => {
   exitButton.addEventListener('click', exitProgram);
 
   enrolledForm.appendChild(courseIdSelect);
+  enrolledForm.appendChild(gpaIndicator);
   enrolledForm.appendChild(userIndicator);
   enrolledForm.appendChild(courseDescription);
   enrolledForm.appendChild(gradeSelect);
@@ -491,7 +553,9 @@ updateDictionary('courseDetails', () => {
   updateDictionary('enrollmentDetails', () => {
     updateDictionary('grades', () => {
       updateDictionary('statuses', () => {
-        displayData();
+        updateDictionary('gpaScale', () => {
+          displayData();
+        });
       });
     });
   });

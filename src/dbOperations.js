@@ -31,7 +31,7 @@ const defaultQueries = {
         + 'FROM t_passwords '
         + 'INNER JOIN t_users '
         + 'ON t_passwords.user_id = t_users.t_id '
-        + 'WHERE t_users.username = ? AND t_users.active = 1',
+        + 'WHERE t_users.username = ? AND t_users.active = 1;',
     },
     t_data: {
       all_data: 'SELECT t_courses.course_id, t_data.grade '
@@ -39,6 +39,9 @@ const defaultQueries = {
         + 'INNER JOIN t_courses '
         + 'ON t_data.course_id = t_courses.t_id '
         + 'ORDER BY t_data.course_id ASC;',
+      gpa_scale: 'SELECT grade_letter, numeric_value '
+        + 'FROM t_gpa_scale '
+        + 'WHERE active = 1;',
     },
     t_courses: {
       all_courses: 'SELECT course_id, course_name, description '
@@ -223,6 +226,13 @@ const getStatusValues = (callback) => {
   );
 };
 
+const getGpaScale = (callback) => {
+  runQueryWithoutUsername(
+    defaultQueries.select.t_data.gpa_scale,
+    callback,
+  );
+};
+
 const insertEnrollment = (args, callback) => {
   const fullQuery = 'INSERT INTO t_data(user_id, course_id, grade, status) '
     + 'VALUES ( '
@@ -271,6 +281,7 @@ module.exports = {
   getCourseDetails,
   getGradeValues,
   getStatusValues,
+  getGpaScale,
   insertEnrollment,
   updateEnrollment,
 };
