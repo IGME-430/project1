@@ -7,6 +7,7 @@ const parseJSON = (xhr, content) => {
 
     switch (statusCode) {
       case 302:
+        // If it is a redirect request, change the window location
         let destination = ``;
         destination += `${obj.destination}?`;
         destination += `username:${obj.username}`;
@@ -39,7 +40,7 @@ const parseJSON = (xhr, content) => {
   } catch (err) {
     console.log(err);
   }
-}; // process the request response
+}; // process the request response after xhr request
 
 
 const handleResponse = xhr => {
@@ -74,12 +75,14 @@ const handleResponse = xhr => {
       break;
 
     case 401:
-      // Similar to 403 Forbidden, but specifically for use when authentication is possible but has failed or not yet been provided.
+      // Similar to 403 Forbidden, but specifically for use when authentication is
+      // possible but has failed or not yet been provided.
       console.log(JSON.parse(xhr.response).message);
       alert(JSON.parse(xhr.response).message);
       break;
 
     case 404:
+      // The requested resource could not be found but may be available again in the future.
       console.log('Resource Not Found');
       break;
 
@@ -90,17 +93,21 @@ const handleResponse = xhr => {
       break;
 
     case 500:
+      // A generic error message, given when no more specific message is suitable.
       console.log('The server encountered an unexpected condition which prevented it from fulfilling the request.');
       break;
 
     case 501:
+      // The server either does not recognise the request method, or it lacks the ability
+      // to fulfill the request.
       console.log('A get request for this page has not been implemented yet.  Check again later for updated content.');
       break;
 
     default:
       console.log('Error code not implemented by client.');
       break;
-  }
+  } // If the XHR object contains a response object, run the parseJSON function
+
 
   if (xhr.response) {
     parseJSON(xhr, content);
@@ -117,20 +124,14 @@ const sendPost = (e, data) => {
 
   if (data['form'] === 'login-form' || data['form'] === 'register-form') {
     xhr.open('POST', '/processRequest');
-  }
+  } // Determine the format of the data to send to the server based on the form
+  // it was sent from
 
-  switch (data['form']) {
-    case 'login-form':
-      // xhr.open('POST', '/login');
-      // append query parameters
-      formData = `username=${data['username']}&password=${data['password']}`;
-      break;
 
-    case 'register-form':
-      // xhr.open('POST', '/register');
-      // append query parameters
-      formData = `username=${data['username']}&password=${data['password']}&email=${data['email']}`;
-      break;
+  if (data['form'] === 'login-form') {
+    formData = `username=${data['username']}&password=${data['password']}`;
+  } else if (data['form'] === 'register-form') {
+    formData = `username=${data['username']}&password=${data['password']}&email=${data['email']}`;
   } // set headers
 
 
