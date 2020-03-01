@@ -1,19 +1,28 @@
+// Set the document cursor as in progress
 document.querySelector('.gpa-data').style.cursor = 'progress';
 
+// Decode the URL
 const decodedURI = decodeURI(document.URL);
 const username = decodedURI.split('?')[1].split(':')[1];
 
+// Create global variables
 let enrollmentData = {};
 let courseIndices = {};
 let grades = {};
 let statuses = {};
 let gpaScale = {};
-const pointersBusy = {};
 const studentGpa = {
   numericValue: 0,
   letterGrades: [],
 };
 
+// The pointerBusy dictionary keeps a list of all elements that are performing some
+// kind of operation.  The busy indicator of the mouse is bound to this dictionary.
+// Any process that runs is added to the dictionary and set to true.  While any entries
+// in this dictionary have a true status, the busy indicator of the mouse runs.
+const pointersBusy = {};
+
+// Determine whether the system is busy with a process
 const noLongerBusy = () => {
   let returnValue = true;
 
@@ -26,6 +35,7 @@ const noLongerBusy = () => {
   return returnValue;
 };
 
+// Populate the course ids into the form
 const populateCourseIds = (element) => {
   Object.values(courseIndices).forEach((value) => {
     const opt = document.createElement('option');
@@ -36,6 +46,7 @@ const populateCourseIds = (element) => {
   });
 };
 
+// Populate the predefined grade options into the form
 const populateGrades = (element) => {
   Object.values(grades).forEach((value) => {
     const opt = document.createElement('option');
@@ -46,6 +57,7 @@ const populateGrades = (element) => {
   });
 };
 
+// Populate the predefined status options into the form
 const populateStatuses = (element) => {
   Object.values(statuses).forEach((value) => {
     const opt = document.createElement('option');
@@ -56,6 +68,7 @@ const populateStatuses = (element) => {
   });
 };
 
+// Update the course description based on the course id selected
 const setCourseDescription = () => {
   const courseId = document.querySelector('#course-id');
 
@@ -66,6 +79,7 @@ const setCourseDescription = () => {
   });
 };
 
+// Convert a grade letter to a GPA numeric value on the 4.0 scale
 const convertToNumber = (gradeLetter) => {
   let letterValue = 0;
 
@@ -79,17 +93,20 @@ const convertToNumber = (gradeLetter) => {
   return letterValue;
 };
 
+// Calculate the user GPA based on data in the form using the predefined 4.0 GPA scale
 const calculateGpa = () => {
   let cumulativeValue = 0;
 
   studentGpa.letterGrades = [];
 
+  // Extract the letter grades from all the current courses enrolled for
   Object.values(enrollmentData).forEach((value) => {
     if (value.status === 'Completed') {
       studentGpa.letterGrades.push(value.grade);
     }
   });
 
+  // Calculate the GPA using the conversion scale
   for (let i = 0; i < studentGpa.letterGrades.length; i++) {
     if (studentGpa.letterGrades[i] !== 'S') {
       cumulativeValue += convertToNumber(studentGpa.letterGrades[i]);
@@ -100,9 +117,11 @@ const calculateGpa = () => {
 
   studentGpa.numericValue = cumulativeValue / studentGpa.letterGrades.length;
 
+  // Place the calculated GPA on the form
   document.querySelector('#gpa-indicator').innerHTML = `- GPA ${studentGpa.numericValue.toFixed(2)}`;
 };
 
+// Populate the table with the current courses enrolled for
 const populateEnrollment = () => {
   const tableTable = document.querySelector('#enrollment-table');
 
@@ -126,10 +145,14 @@ const populateEnrollment = () => {
     tableTable.appendChild(tableRow);
   });
 
+  // Due to the ESLint no use before define rule and the 204 update code requirement
+  // we cannot force a form update after the data is updated.  This timeout allows
+  // the server some time to complete the update process before re-querying the database
   setTimeout(calculateGpa, 1000);
 };
 
-const addCourseHeadings = (tableTable) => {
+// Add the table headings
+const addTableHeadings = (tableTable) => {
   const heading = document.createElement('thead');
 
   const headId = document.createElement('th');
@@ -161,6 +184,11 @@ const parseJSON = (xhr, content) => {
       message = obj.message;
     }
 
+    // The response messages contain an index in the message field to inform
+    // the client which process was just performed.  Based on this return
+    // message different relating functions need to be run in order to update
+    // the client form.  Each switch option updates the values associated
+    // with the actual case value.
     switch (statusCode) {
       case 200:
         switch (message) {
@@ -179,7 +207,7 @@ const parseJSON = (xhr, content) => {
             enrollmentData = obj.queryData;
 
             populateEnrollment();
-            addCourseHeadings(document.querySelector('#enrollment-table'));
+            addTableHeadings(document.querySelector('#enrollment-table'));
             pointersBusy.enrollmentDetails = false;
 
             break;
@@ -204,7 +232,6 @@ const parseJSON = (xhr, content) => {
           }
           case 'gpaScale': {
             gpaScale = obj.queryData;
-
             pointersBusy.gpaScale = false;
 
             break;
@@ -215,9 +242,11 @@ const parseJSON = (xhr, content) => {
 
         break;
       case 201: {
+        // Update the enrollment data after a new course was added or an
+        // existing course was updated.
         enrollmentData = obj.data;
         populateEnrollment();
-        addCourseHeadings(document.querySelector('#enrollment-table'));
+        addTableHeadings(document.querySelector('#enrollment-table'));
         pointersBusy.enrollmentDetails = false;
 
         break;
@@ -329,6 +358,9 @@ const sendAjax = (url, userId) => {
   return false;
 };
 
+// This function contains the ajax commands to request specific types of
+// information from the server.  All these functions are related to SQL query
+// operations.
 const updateDictionary = (type, callback) => {
   switch (type) {
     case 'courseDetails':
@@ -397,9 +429,15 @@ const sendPost = (e, data) => {
   return false;
 };
 
+// This function determines whether information changed in the table and what
+// should be done with it
 const evaluateData = (extractedData) => {
   let returnValue = '';
 
+  // Due to ESLint, I cannot use normal loops and Object.values().forEach don't allow
+  // the use of a break statement to get out of a loop.  This set of bool values
+  // is my way of determining what should be done during each operation based
+  // on what was changed in the values
   let validData = false;
   let alerted = false;
   let insertData = false;
@@ -463,6 +501,7 @@ const formData = (activeForm, successCallback) => {
   }
 };
 
+// Add the input value fields to the form
 const addInputFields = (userDataReference) => {
   const enrolledForm = document.createElement('form');
   enrolledForm.className = 'container enrolled-form';
@@ -497,6 +536,10 @@ const addInputFields = (userDataReference) => {
       (successData) => {
         document.querySelector('.gpa-data').style.cursor = 'progress';
         sendPost(e, successData);
+
+        // Due to the ESLint no use before define rule and the 204 update code requirement
+        // we cannot force a form update after the data is updated.  This timeout allows
+        // the server some time to complete the update process before re-querying the database
         setTimeout(() => updateDictionary('enrollmentDetails', () => {}), 1000);
       },
     );
@@ -531,6 +574,7 @@ const addInputFields = (userDataReference) => {
   userDataReference.appendChild(enrolledForm);
 };
 
+// Display the data associated with the current user on the form
 const displayData = () => {
   const userDataReference = document.querySelector('#data');
 
@@ -549,6 +593,7 @@ const displayData = () => {
   setCourseDescription();
 };
 
+// Run queries to update the local copies of all the relevant data in the database.
 updateDictionary('courseDetails', () => {
   updateDictionary('enrollmentDetails', () => {
     updateDictionary('grades', () => {
