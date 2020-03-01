@@ -72,6 +72,10 @@ const defaultQueries = {
         + 'WHERE TABLE_NAME = "t_data" '
         + 'AND COLUMN_NAME = "status";',
     },
+    t_properties: {
+      grade_values: `SELECT val FROM t_properties WHERE prop = 'grade' ORDER BY val ASC;`,
+      status_values: `SELECT val FROM t_properties WHERE prop = 'status' ORDER BY val ASC;`,
+    }
   },
 };
 
@@ -214,14 +218,14 @@ const getCourseDetails = (callback) => {
 
 const getGradeValues = (callback) => {
   runQueryWithoutUsername(
-    defaultQueries.select.information_schema.grade_values,
+    defaultQueries.select.t_properties.grade_values,
     callback,
   );
 };
 
 const getStatusValues = (callback) => {
   runQueryWithoutUsername(
-    defaultQueries.select.information_schema.status_values,
+    defaultQueries.select.t_properties.status_values,
     callback,
   );
 };
@@ -272,6 +276,7 @@ const updateEnrollment = (args, callback) => {
   );
 };
 
+// Export locally defined functions for external use
 module.exports = {
   registerUser,
   registerPassword,
