@@ -73,9 +73,9 @@ const defaultQueries = {
         + 'AND COLUMN_NAME = "status";',
     },
     t_properties: {
-      grade_values: `SELECT val FROM t_properties WHERE prop = 'grade' ORDER BY val ASC;`,
-      status_values: `SELECT val FROM t_properties WHERE prop = 'status' ORDER BY val ASC;`,
-    }
+      grade_values: 'SELECT val FROM t_properties WHERE prop = \'grade\' ORDER BY val ASC;',
+      status_values: 'SELECT val FROM t_properties WHERE prop = \'status\' ORDER BY val ASC;',
+    },
   },
 };
 
