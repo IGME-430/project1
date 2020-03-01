@@ -144,6 +144,7 @@ const sendPost = (e, data) => {
   xhr.send(formData);
   return false;
 };
+// Use regular expressions to perform an email address validation check
 const validateEmail = email => {
   let mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -153,7 +154,10 @@ const validateEmail = email => {
     alert("You have entered an invalid email address!");
     return false;
   }
-};
+}; // Check whether information is entered in the login and creation forms
+// when the button is clicked.  Also check if the information meets some
+// basic conditions.
+
 
 const evaluateData = extractedData => {
   let returnValue = false;
@@ -185,12 +189,15 @@ const formData = (activeForm, callback) => {
   const formElements = activeForm.querySelectorAll('input');
 
   switch (activeForm.className) {
+    // A switch is used here because additional forms are expected.
     case 'login-form':
+      // If we are on the login form
       extractedData['username'] = formElements[0].value;
       extractedData['password'] = formElements[1].value;
       break;
 
     case 'register-form':
+      // If we are on the  registration form
       extractedData['username'] = formElements[0].value;
       extractedData['password'] = formElements[1].value;
       extractedData['email'] = formElements[2].value;
