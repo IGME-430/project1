@@ -84,6 +84,7 @@ const processRequest = (request, response) => {
   });
 };
 
+// Export locally defined functions for external use
 module.exports = {
   processRequest,
   login,
