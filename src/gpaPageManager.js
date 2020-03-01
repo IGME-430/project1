@@ -497,7 +497,7 @@ const addInputFields = (userDataReference) => {
       (successData) => {
         document.querySelector('.gpa-data').style.cursor = 'progress';
         sendPost(e, successData);
-        updateDictionary('enrollmentDetails', () => {});
+        setTimeout(() => updateDictionary('enrollmentDetails', () => {}), 1000);
       },
     );
   };
