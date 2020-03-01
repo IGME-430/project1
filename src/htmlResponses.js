@@ -37,5 +37,4 @@ module.exports = {
   getLogin,
   getGpaData,
   getGpaDataRedirect,
-  // gpaData,
 };
