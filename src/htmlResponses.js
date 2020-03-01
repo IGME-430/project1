@@ -32,7 +32,7 @@ const getGpaDataRedirect = (request, response, params) => {
   response.end();
 };
 
-// Export responses
+// Export locally defined functions for external use
 module.exports = {
   getLogin,
   getGpaData,
