@@ -248,19 +248,11 @@ const getEnrollmentDetails = (request, response) => {
   });
 };
 
-const enumToArray = (enumResponse) => {
-  let inProgress = enumResponse.data.queryData[0].COLUMN_TYPE;
-  inProgress = inProgress.substring(inProgress.indexOf('(') + 1, inProgress.indexOf(')'));
-  inProgress = inProgress.replace(/'/g, '').split(',');
-
-  return inProgress;
-};
-
 const getGradeValues = (request, response) => {
   const responseJSON = {};
 
   dbOperations.getGradeValues((result) => {
-    responseJSON.queryData = enumToArray(result);
+    responseJSON.queryData = result.data.queryData;
     responseJSON.message = 'grades';
 
     respondJSON(request, response, 200, responseJSON);
@@ -271,7 +263,7 @@ const getStatusValues = (request, response) => {
   const responseJSON = {};
 
   dbOperations.getStatusValues((result) => {
-    responseJSON.queryData = enumToArray(result);
+    responseJSON.queryData = result.data.queryData;
     responseJSON.message = 'statuses';
 
     respondJSON(request, response, 200, responseJSON);
@@ -289,7 +281,7 @@ const getGpaScale = (request, response) => {
   });
 };
 
-
+// Export locally defined functions for external use
 module.exports = {
   processUserData,
   getUsers,
