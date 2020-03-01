@@ -21,11 +21,12 @@ const getGpaData = (request, response) => {
 
 // Set up response to honor index request
 const getGpaDataRedirect = (request, response, params) => {
-  let newParams = JSON.parse(params);
+  const newParams = {};
+  newParams.username = params;
   newParams.destination = '/gpaData';
-  newParams = JSON.stringify(newParams);
-  // params = JSON.stringify(newParams);
+
   console.log('sending gpa redirect');
+
   response.writeHead(302, { 'Content-Type': 'text/html' });
   response.write(JSON.stringify(newParams));
   response.end();
@@ -36,4 +37,5 @@ module.exports = {
   getLogin,
   getGpaData,
   getGpaDataRedirect,
+  // gpaData,
 };

@@ -1,8 +1,6 @@
 const query = require('querystring');
 const dbOperations = require('./dbOperations.js');
 
-const users = {};
-
 // Configure messages for responses
 const messages = {
   200: {
@@ -10,8 +8,12 @@ const messages = {
     message: 'This is a getUsers full response',
   },
   201: {
-    id: 'create',
+    id: 'created',
     message: 'Created Successfully',
+  },
+  202: {
+    id: 'Accepted',
+    message: 'The request has been accepted for processing',
   },
   204: {
     id: 'updated',
@@ -33,6 +35,10 @@ const messages = {
     id: 'conflict',
     message: 'The specified username already exists.',
   },
+  500: {
+    id: 'serverError',
+    message: 'The server encountered an unexpected condition which prevented it from fulfilling the request.',
+  },
   501: {
     id: 'notImplemented',
     message: 'A get request for this page has not been implemented yet.  Check again later for updated content.',
@@ -52,8 +58,49 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-// Add a user to the users dictionary
-const addUser = (request, response) => {
+// const processEnrollment = (request, response, bodyParams) => {
+const processEnrollment = (request, response, bodyParams) => {
+  const responseJSON = {};
+
+  // confirm that the appropriate amount of data was provided
+  if (!bodyParams.username || !bodyParams.courseId || !bodyParams.grade || !bodyParams.status) {
+    responseJSON.id = 'missingParams';
+    respondJSON(request, response, 400, messages[400].message);
+  }
+
+  dbOperations.insertEnrollment(bodyParams, (callback) => {
+    if (callback.id === 200) {
+      responseJSON.message = 'Created Successfully';
+      responseJSON.data = JSON.parse(JSON.stringify(callback.enrollmentData));
+      respondJSON(request, response, 201, responseJSON);
+    } else if (callback.id === 500) {
+      respondJSON(request, response, 500, messages[500].message);
+    }
+  });
+};
+
+const updateEnrollment = (request, response, bodyParams) => {
+  const responseJSON = {};
+
+  // confirm that the appropriate amount of data was provided
+  if (!bodyParams.username || !bodyParams.courseId || !bodyParams.grade || !bodyParams.status) {
+    responseJSON.id = 'missingParams';
+    respondJSON(request, response, 400, messages[400].message);
+  }
+
+  dbOperations.updateEnrollment(bodyParams, (callback) => {
+    if (callback.id === 200) {
+      responseJSON.message = 'Updated Successfully';
+      responseJSON.data = JSON.parse(JSON.stringify(callback.enrollmentData));
+      respondJSONMeta(request, response, 204);
+    } else if (callback.id === 500) {
+      respondJSON(request, response, 500, messages[500].message);
+    }
+  });
+};
+
+// Add enrollment
+const processUserData = (request, response) => {
   const res = response;
   const body = [];
 
@@ -74,36 +121,15 @@ const addUser = (request, response) => {
     const bodyString = Buffer.concat(body).toString();
     const bodyParams = query.parse(bodyString);
 
-    const responseJSON = {
-      message: 'Name and age are both required.',
-    };
-
-    // confirm that the appropriate amount of data was provided
-    if (!bodyParams.name || !bodyParams.age) {
-      responseJSON.id = 'missingParams';
-      return respondJSON(request, response, 400, responseJSON);
-    }
-
-    // if required level of data was provided, set response code to successfully created
-    let responseCode = 201;
-
-    if (users[bodyParams.name]) {
-      responseCode = 204;
+    if (bodyParams.form === 'container enrolled-form') {
+      if (bodyParams.operation === 'insertData') {
+        processEnrollment(request, response, bodyParams);
+      } else if (bodyParams.operation === 'updateData') {
+        updateEnrollment(request, response, bodyParams);
+      }
     } else {
-      users[bodyParams.name] = {};
+      respondJSON(request, response, 400, messages[400]);
     }
-
-    // set the values in the array
-    users[bodyParams.name].name = bodyParams.name;
-    users[bodyParams.name].age = bodyParams.age;
-
-    // respond with successful creation
-    if (responseCode === 201) {
-      responseJSON.message = 'Created Successfully';
-      return respondJSON(request, response, responseCode, responseJSON);
-    }
-
-    return respondJSONMeta(request, response, responseCode);
   });
 };
 
@@ -138,18 +164,6 @@ const getData = (request, response) => {
 
 const getDataMeta = (request, response) => {
   respondJSONMeta(request, response, 200, messages[200]);
-};
-
-const getCourses = (request, response) => {
-  const responseJSON = {};
-
-  const sqlQuery = ['select', 't_courses', 'all_courses'];
-
-  dbOperations.getDefault(sqlQuery, (result) => {
-    responseJSON.queryData = result.queryData;
-
-    respondJSON(request, response, 200, responseJSON);
-  });
 };
 
 const getCoursesMeta = (request, response) => {
@@ -212,13 +226,65 @@ const notFoundMeta = (request, response, attribute) => {
   respondJSONMeta(request, response, 404, message);
 };
 
+const getCourseDetails = (request, response) => {
+  const responseJSON = {};
+
+  dbOperations.getCourseDetails((result) => {
+    responseJSON.queryData = result.data.queryData;
+    responseJSON.message = 'courseDetails';
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+const getEnrollmentDetails = (request, response) => {
+  const responseJSON = {};
+
+  dbOperations.getEnrolledCourses(request.headers.authorization, (result) => {
+    responseJSON.queryData = result.data.queryData;
+    responseJSON.message = 'enrollmentDetails';
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+const enumToArray = (enumResponse) => {
+  let inProgress = enumResponse.data.queryData[0].COLUMN_TYPE;
+  inProgress = inProgress.substring(inProgress.indexOf('(') + 1, inProgress.indexOf(')'));
+  inProgress = inProgress.replace(/'/g, '').split(',');
+
+  return inProgress;
+};
+
+const getGradeValues = (request, response) => {
+  const responseJSON = {};
+
+  dbOperations.getGradeValues((result) => {
+    responseJSON.queryData = enumToArray(result);
+    responseJSON.message = 'grades';
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+const getStatusValues = (request, response) => {
+  const responseJSON = {};
+
+  dbOperations.getStatusValues((result) => {
+    responseJSON.queryData = enumToArray(result);
+    responseJSON.message = 'statuses';
+
+    respondJSON(request, response, 200, responseJSON);
+  });
+};
+
+
 module.exports = {
-  addUser,
+  processUserData,
   getUsers,
   getUsersMeta,
   getData,
   getDataMeta,
-  getCourses,
   getCoursesMeta,
   created,
   createdMeta,
@@ -230,4 +296,8 @@ module.exports = {
   notFoundMeta,
   respondJSON,
   respondJSONMeta,
+  getCourseDetails,
+  getEnrollmentDetails,
+  getGradeValues,
+  getStatusValues,
 };

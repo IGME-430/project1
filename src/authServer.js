@@ -6,50 +6,23 @@ const htmlHandler = require('./htmlResponses.js');
 const login = (request, response, bodyString, bodyParams) => {
   const responseJSON = {};
 
-  const sqlQueryDict = {
-    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND active = 1',
-    valid: 'SELECT password '
-        + 'FROM t_passwords '
-        + 'INNER JOIN t_users '
-        + 'ON t_passwords.user_id = t_users.t_id '
-        + 'WHERE t_users.username = ? AND t_users.active = 1',
-  };
+  dbOperations.getUser(bodyParams.username, (userQuery) => {
+    const userCount = userQuery.data.queryData;
 
-  dbOperations.runQuery(sqlQueryDict.exists, bodyParams.username, (userQuery) => {
-    responseJSON.userCount = userQuery.queryData;
+    if (userCount.length > 0) {
+      dbOperations.getPassword(bodyParams.username, (passwordQuery) => {
+        const userPassword = passwordQuery.data.queryData[0].password;
 
-    if (responseJSON.userCount.length > 0) {
-      dbOperations.runQuery(sqlQueryDict.valid, bodyParams.username, (passwordQuery) => {
-        responseJSON.userPassword = passwordQuery.queryData;
-
-        if (responseJSON.userPassword[0].password === bodyParams.password) {
-          // dbOperations.buildResponse();
-          let dataQuery = 'CALL completed_courses(?)';
-
-          const bulkData = {
-            arguments: {
-              username: bodyParams.username,
-            },
-          };
-
-          dbOperations.runStoredProcedure(dataQuery, bodyParams, (enrollmentData) => {
-            bulkData.enrollmentData = enrollmentData;
-
-            dataQuery = 'CALL course_indices()';
-            dbOperations.runStoredProcedure(dataQuery, bodyParams, (courseIndices) => {
-              bulkData.courseIndices = courseIndices;
-
-              htmlHandler.getGpaDataRedirect(request, response, JSON.stringify(bulkData));
-            });
-
-            // htmlHandler.getGpaDataRedirect(request, response, JSON.stringify(data));
-          });
+        if (userPassword === bodyParams.password) {
+          htmlHandler.getGpaDataRedirect(request, response, bodyParams.username);
         } else {
-          jsonHandler.respondJSONMeta(request, response, 401);
+          responseJSON.message = 'The supplied password is incorrect';
+          jsonHandler.respondJSON(request, response, 401, responseJSON);
         }
       });
     } else {
-      jsonHandler.notFound(request, response, 'user');
+      responseJSON.message = 'The username specified does not exist.  Please register to use this service';
+      jsonHandler.respondJSON(request, response, 401, responseJSON);
     }
   });
 };
@@ -57,40 +30,25 @@ const login = (request, response, bodyString, bodyParams) => {
 const register = (request, response, bodyString, bodyParams) => {
   const responseJSON = {};
 
-  const sqlQueryDict = {
-    exists: 'SELECT * FROM t_users WHERE username LIKE ? AND active = 1',
-    notExists: {
-      insertUser: 'INSERT INTO t_users(username, email) VALUES ?',
-      insertPassword: 'INSERT INTO t_passwords(user_id, password) VALUES ?',
-    },
-    valid: 'SELECT password '
-        + 'FROM t_passwords '
-        + 'INNER JOIN t_users '
-        + 'ON t_passwords.user_id = t_users.t_id '
-        + 'WHERE t_users.username = ? AND t_users.active = 1',
-  };
+  dbOperations.getUser(bodyParams.username, (userQuery) => {
+    const userCount = JSON.parse(JSON.stringify(userQuery.data.queryData)).length;
 
-  dbOperations.runQuery(sqlQueryDict.exists, bodyParams.username, (userQuery) => {
-    responseJSON.userCount = userQuery.queryData;
-
-    if (responseJSON.userCount.length > 0) {
-      jsonHandler.respondJSONMeta(request, response, 409, jsonHandler.messages[409]);
+    if (userCount === 0) {
+      dbOperations.registerUser(bodyParams.username, bodyParams.email, (queryResponse) => {
+        dbOperations.registerPassword(
+          queryResponse.data.queryData.insertId,
+          bodyParams.password,
+          (status) => {
+            if (status.data.queryData.insertId) {
+              responseJSON.message = `User ${bodyParams.username} created successfully`;
+              jsonHandler.respondJSON(request, response, 201, responseJSON);
+            }
+          },
+        );
+      });
     } else {
-      dbOperations.insertUser(
-        sqlQueryDict.notExists.insertUser,
-        bodyParams,
-        (queryResponse) => {
-          dbOperations.insertPassword(
-            sqlQueryDict.notExists.insertPassword, {
-              userid: queryResponse.queryData.insertId,
-              password: bodyParams.password,
-            }, (status) => {
-              console.log(status);
-              jsonHandler.created(request, response);
-            },
-          );
-        },
-      );
+      responseJSON.message = `User ${bodyParams.username} already exists in the database`;
+      jsonHandler.respondJSON(request, response, 409, responseJSON);
     }
   });
 };

@@ -22,7 +22,16 @@ const connectionPreferences = {
 const defaultQueries = {
   select: {
     t_users: {
-      all_users: 'SELECT username, email FROM t_users;',
+      all_users: 'SELECT username, email '
+        + 'FROM t_users;',
+      user_exists: 'SELECT * '
+        + 'FROM t_users '
+        + 'WHERE username LIKE ? AND active = 1;',
+      user_password: 'SELECT password '
+        + 'FROM t_passwords '
+        + 'INNER JOIN t_users '
+        + 'ON t_passwords.user_id = t_users.t_id '
+        + 'WHERE t_users.username = ? AND t_users.active = 1',
     },
     t_data: {
       all_data: 'SELECT t_courses.course_id, t_data.grade '
@@ -32,10 +41,33 @@ const defaultQueries = {
         + 'ORDER BY t_data.course_id ASC;',
     },
     t_courses: {
-      all_courses: 'SELECT course_id, course_name, description FROM t_courses',
+      all_courses: 'SELECT course_id, course_name, description '
+        + 'FROM t_courses '
+        + 'ORDER BY course_id ASC;',
+      course_ids_and_names: 'SELECT course_id, course_name '
+        + 'FROM t_courses '
+        + 'ORDER BY course_id ASC;',
+      enrolled_courses: 'SELECT t_courses.course_id, t_courses.course_name, t_data.grade, t_data.status '
+        + 'FROM t_data '
+        + 'INNER JOIN t_users ON '
+        + 't_users.t_id = t_data.user_id '
+        + 'INNER JOIN t_courses ON '
+        + 't_courses.t_id = t_data.course_id '
+        + 'WHERE t_users.username = ? '
+        + 'ORDER BY t_courses.course_id ASC;',
     },
     t_gpa_scale: {
-      scale: 'SELECT grade_letter, numeric_value FROM t_gpa_scale',
+      scale: 'SELECT grade_letter, numeric_value FROM t_gpa_scale;',
+    },
+    information_schema: {
+      grade_values: 'SELECT COLUMN_TYPE '
+        + 'FROM information_schema.`COLUMNS` '
+        + 'WHERE TABLE_NAME = "t_data" '
+        + 'AND COLUMN_NAME = "grade";',
+      status_values: 'SELECT COLUMN_TYPE '
+        + 'FROM information_schema.`COLUMNS` '
+        + 'WHERE TABLE_NAME = "t_data" '
+        + 'AND COLUMN_NAME = "status";',
     },
   },
 };
@@ -64,39 +96,19 @@ const openConnection = () => {
   return connection;
 };
 
-const processResult = (result, fields) => {
+const processResult = (result, fields, callback) => {
   const data = {
     queryData: result,
     tableData: fields,
   };
 
-  return data;
+  callback(data);
 };
 
-const getDefault = (queryParams, callback) => {
+const runQueryWithUsername = (username, fullQuery, callback) => {
   const con = openConnection();
 
-  con.connect((connErr) => {
-    if (connErr) {
-      throw connErr;
-    } else {
-      con.query(
-        defaultQueries[queryParams[0]][queryParams[1]][queryParams[2]],
-        (queryErr, result, fields) => {
-          if (queryErr) {
-            throw queryErr;
-          } else {
-            callback(processResult(result, fields));
-          }
-        },
-      );
-      con.end();
-    }
-  });
-};
-
-const runQuery = (fullQuery, username, callback) => {
-  const con = openConnection();
+  const responseJSON = {};
 
   con.connect((connErr) => {
     if (connErr) {
@@ -107,9 +119,14 @@ const runQuery = (fullQuery, username, callback) => {
         [username],
         (queryErr, result, fields) => {
           if (queryErr) {
-            throw queryErr;
+            responseJSON.id = 500;
+            callback(responseJSON);
           } else {
-            callback(processResult(result, fields));
+            processResult(result, fields, (data) => {
+              responseJSON.id = 200;
+              responseJSON.data = data;
+              callback(responseJSON);
+            });
           }
         },
       );
@@ -118,10 +135,10 @@ const runQuery = (fullQuery, username, callback) => {
   });
 };
 
-const insertUser = (fullQuery, args, callback) => {
+const runQueryWithoutUsername = (fullQuery, callback) => {
   const con = openConnection();
 
-  const values = [[args.username, args.email]];
+  const responseJSON = {};
 
   con.connect((connErr) => {
     if (connErr) {
@@ -129,12 +146,16 @@ const insertUser = (fullQuery, args, callback) => {
     } else {
       con.query(
         fullQuery,
-        [values],
         (queryErr, result, fields) => {
           if (queryErr) {
-            throw queryErr;
+            responseJSON.id = 500;
+            callback(responseJSON);
           } else {
-            callback(processResult(result, fields));
+            processResult(result, fields, (data) => {
+              responseJSON.id = 200;
+              responseJSON.data = data;
+              callback(responseJSON);
+            });
           }
         },
       );
@@ -143,67 +164,113 @@ const insertUser = (fullQuery, args, callback) => {
   });
 };
 
-const insertPassword = (fullQuery, args, callback) => {
-  const con = openConnection();
-
-  const values = [[args.userid, args.password]];
-
-  con.connect((connErr) => {
-    if (connErr) {
-      throw connErr;
-    } else {
-      con.query(
-        fullQuery,
-        [values],
-        (queryErr, result, fields) => {
-          if (queryErr) {
-            throw queryErr;
-          } else {
-            callback(processResult(result, fields));
-          }
-        },
-      );
-      con.end();
-    }
-  });
+const registerUser = (username, email, callback) => {
+  runQueryWithoutUsername(
+    `INSERT INTO t_users(username, email) VALUES ("${username}", "${email}");`,
+    callback,
+  );
 };
 
-const runStoredProcedure = (fullQuery, args, callback) => {
-  const con = openConnection();
-
-  con.connect((connErr) => {
-    if (connErr) {
-      throw connErr;
-    } else {
-      con.query(
-        fullQuery,
-        [args.username],
-        (queryErr, result, fields) => {
-          if (queryErr) {
-            throw queryErr;
-          } else {
-            callback(
-              {
-                data: processResult(result, fields).queryData,
-              },
-            );
-          }
-        },
-      );
-      con.end();
-    }
-  });
+const registerPassword = (userId, password, callback) => {
+  runQueryWithoutUsername(
+    `INSERT INTO t_passwords(user_id, password) VALUES ("${userId}", "${password}");`,
+    callback,
+  );
 };
 
-const buildResponse = () => {
+const getUser = (username, callback) => {
+  runQueryWithUsername(
+    username,
+    defaultQueries.select.t_users.user_exists,
+    callback,
+  );
+};
 
+const getPassword = (username, callback) => {
+  runQueryWithUsername(
+    username,
+    defaultQueries.select.t_users.user_password,
+    callback,
+  );
+};
+
+const getEnrolledCourses = (username, callback) => {
+  runQueryWithUsername(
+    username,
+    defaultQueries.select.t_courses.enrolled_courses,
+    callback,
+  );
+};
+
+const getCourseDetails = (callback) => {
+  runQueryWithoutUsername(
+    defaultQueries.select.t_courses.course_ids_and_names,
+    callback,
+  );
+};
+
+const getGradeValues = (callback) => {
+  runQueryWithoutUsername(
+    defaultQueries.select.information_schema.grade_values,
+    callback,
+  );
+};
+
+const getStatusValues = (callback) => {
+  runQueryWithoutUsername(
+    defaultQueries.select.information_schema.status_values,
+    callback,
+  );
+};
+
+const insertEnrollment = (args, callback) => {
+  const fullQuery = 'INSERT INTO t_data(user_id, course_id, grade, status) '
+    + 'VALUES ( '
+      + `(SELECT t_id FROM t_users WHERE username = "${args.username}"), `
+      + `(SELECT t_id FROM t_courses WHERE course_id = "${args.courseId}"), `
+      + `("${args.grade}"), `
+      + `("${args.status}")`
+    + ');';
+
+  runQueryWithoutUsername(
+    fullQuery,
+    (queryData) => getEnrolledCourses(args.username, (enrollmentData) => {
+      const responseJSON = queryData;
+      responseJSON.enrollmentData = enrollmentData.data.queryData;
+      callback(responseJSON);
+    }),
+  );
+};
+
+const updateEnrollment = (args, callback) => {
+  const fullQuery = 'UPDATE t_data '
+    + 'SET '
+    + `status = "${args.status}", `
+    + `grade = "${args.grade}" `
+    + 'WHERE ( '
+    + `(user_id = (SELECT t_id FROM t_users WHERE username = "${args.username}")) AND `
+    + `(course_id = (SELECT t_id FROM t_courses WHERE course_id = "${args.courseId}")) `
+    + ');';
+
+  runQueryWithoutUsername(
+    fullQuery,
+    (queryData) => getEnrolledCourses(args.username, (enrollmentData) => {
+      const responseJSON = queryData;
+      responseJSON.enrollmentData = enrollmentData.data.queryData;
+      callback(responseJSON);
+    }),
+  );
 };
 
 module.exports = {
-  getDefault,
-  runQuery,
-  insertUser,
-  insertPassword,
-  runStoredProcedure,
-  buildResponse,
+  registerUser,
+  registerPassword,
+  getUser,
+  getPassword,
+  getEnrolledCourses,
+  getCourseDetails,
+  getGradeValues,
+  getStatusValues,
+  insertEnrollment,
+  updateEnrollment,
 };

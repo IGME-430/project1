@@ -1,5 +1,15 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto:300);
 
+body {
+  height: 100%;
+}
+
+.login-page {
+  z-index: 999;
+  height: 100%;
+  width: 100%;
+}
+
 .login-page {
   width: 360px;
   padding: 8% 0 0;
@@ -9,7 +19,6 @@
   position: relative;
   z-index: 1;
   background: #FFFFFF;
-  /*max-width: 360px;*/
   margin: 0 auto 100px;
   padding: 45px;
   text-align: center;

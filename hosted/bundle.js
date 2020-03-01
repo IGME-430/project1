@@ -5,30 +5,39 @@ const parseJSON = (xhr, content) => {
     const statusCode = xhr.status;
     const obj = JSON.parse(xhr.response);
 
-    if (statusCode !== 302) {
-      console.dir(obj); // if response contains message, display it
+    switch (statusCode) {
+      case 302:
+        let destination = ``;
+        destination += `${obj.destination}?`;
+        destination += `username:${obj.username}`;
+        window.location.replace(destination);
+        break;
 
-      if (obj.message) {
-        const p = document.createElement('p');
-        p.textContent = `Message: ${obj.message}`;
-        content.appendChild(p);
-      } // if response contains user info, display it
+      case 201:
+      case 401:
+      case 409:
+        break;
+
+      default:
+        console.dir(obj); // if response contains message, display it
+
+        if (obj.message) {
+          const p = document.createElement('p');
+          p.textContent = `Message: ${obj.message}`;
+          content.appendChild(p);
+        } // if response contains user info, display it
 
 
-      if (obj.users) {
-        const userList = document.createElement('p');
-        const users = JSON.stringify(obj.users);
-        userList.textContent = users;
-        content.appendChild(userList);
-      }
-    } else {
-      let tempData = JSON.parse(obj);
-      window.location.replace(`${tempData['destination']}?username:${tempData['arguments'].username}&
-enrollmentData:${JSON.stringify(tempData.enrollmentData.data[0])}&
-courseIndices:${JSON.stringify(tempData.courseIndices.data[0])}`);
+        if (obj.users) {
+          const userList = document.createElement('p');
+          const users = JSON.stringify(obj.users);
+          userList.textContent = users;
+          content.appendChild(userList);
+        }
+
     }
-  } catch (e) {
-    return false;
+  } catch (err) {
+    console.log(err);
   }
 }; // process the request response
 
@@ -38,46 +47,64 @@ const handleResponse = xhr => {
 
   switch (xhr.status) {
     case 200:
-      console.log('Success'); // content.innerHTML = '<b>Success</b>';
-
+      console.log('Success');
       break;
 
     case 201:
-      console.log('Created'); // content.innerHTML = '<b>Create</b>';
+      // The request has been fulfilled and resulted in a new resource being created.
+      console.log(JSON.parse(xhr.response).message);
+      alert(JSON.parse(xhr.response).message);
+      break;
 
+    case 202:
+      // The request has been accepted for processing, but the processing has not been completed.
+      console.log('Created');
       break;
 
     case 204:
-      console.log('Updated (No Content)'); // content.innerHTML = '<b>Updated (No Content)</b>';
-
+      console.log('Updated (No Content)');
       break;
 
     case 302:
-      console.log('Redirecting'); // content.innerHTML = '<b>Updated (No Content)</b>';
-
+      console.log('Redirecting');
       break;
 
     case 400:
-      console.log('Bad Request'); // content.innerHTML = '<b>Bad Request</b>';
-
+      console.log('Bad Request');
       break;
 
     case 401:
-      console.log('User Not Authorized');
+      // Similar to 403 Forbidden, but specifically for use when authentication is possible but has failed or not yet been provided.
+      console.log(JSON.parse(xhr.response).message);
+      alert(JSON.parse(xhr.response).message);
       break;
 
     case 404:
-      console.log('Resource Not Found'); // content.innerHTML = '<b>Resource Not Found</b>';
+      console.log('Resource Not Found');
+      break;
 
+    case 409:
+      // The request could not be processed because of conflict in the request.
+      console.log(JSON.parse(xhr.response).message);
+      alert(JSON.parse(xhr.response).message);
+      break;
+
+    case 500:
+      console.log('The server encountered an unexpected condition which prevented it from fulfilling the request.');
+      break;
+
+    case 501:
+      console.log('A get request for this page has not been implemented yet.  Check again later for updated content.');
       break;
 
     default:
-      console.log('Error code not implemented by client.'); // content.innerHTML = '<b>Error code not implemented by client.</b>';
-
+      console.log('Error code not implemented by client.');
       break;
   }
 
-  parseJSON(xhr, content);
+  if (xhr.response) {
+    parseJSON(xhr, content);
+  }
 }; // Set up and send the POST request
 
 
@@ -114,25 +141,6 @@ const sendPost = (e, data) => {
 
 
   xhr.send(formData);
-  return false;
-}; // Set up and send the AJAX request
-
-
-const sendAjax = (e, url) => {
-  e.preventDefault(); // // get parameters from form
-  // const url = document.querySelector('#urlField').value;
-  // const method = document.querySelector('#methodSelect').value;
-  // construct the XHR request
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', url); // set headers
-
-  xhr.setRequestHeader('Accept', 'application/json'); // configure callback
-
-  xhr.onload = () => handleResponse(xhr, true); // send request
-
-
-  xhr.send();
   return false;
 };
 const validateEmail = email => {
@@ -197,8 +205,7 @@ const formData = (activeForm, callback) => {
 
 
 const init = () => {
-  document.cookie = ''; // Add animation to login screen
-
+  // Add animation to login screen
   $('.message a').click(function () {
     $('form').animate({
       height: "toggle",
@@ -210,6 +217,7 @@ const init = () => {
   const registerForm = document.querySelector('.register-form'); // create handlers to forms
 
   const login = e => formData(loginForm, extractedData => {
+    document.querySelector('.login-page').style.cursor = "progress";
     sendPost(e, extractedData);
   });
 

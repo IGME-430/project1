@@ -70,8 +70,6 @@ const formData = (activeForm, callback) => {
 // Initialize form elements
 const init = () => {
 
-  document.cookie = '';
-
   // Add animation to login screen
   $('.message a').click(function(){
     $('form').animate({height: "toggle", opacity: "toggle"}, "slow");
@@ -82,7 +80,10 @@ const init = () => {
   const registerForm = document.querySelector('.register-form');
 
   // create handlers to forms
-  const login = (e) => formData(loginForm, (extractedData) => {sendPost(e, extractedData)});
+  const login = (e) => formData(loginForm, (extractedData) => {
+    document.querySelector('.login-page').style.cursor = "progress";
+    sendPost(e, extractedData);
+  });
   const register = (e) => formData(registerForm, (extractedData) => {sendPost(e, extractedData)});
 
   loginForm.addEventListener('submit', login);

@@ -4,7 +4,6 @@ const htmlHandler = require('./htmlResponses.js');
 const jsonResponseHandler = require('./jsonResponses.js');
 const jsResponseHandler = require('./jsResponses.js');
 const cssResponseHandler = require('./cssResponses.js');
-// const vueResponseHandler = require('./vueResponses.js');
 const authHandler = require('./authServer.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
@@ -20,15 +19,16 @@ const urlStruct = {
     '/dataStyle.css': cssResponseHandler.getDataStyleCSS,
     '/gpaPageManager.js': jsResponseHandler.getGpaPageManager,
     '/bundle.js': jsResponseHandler.getBundle,
-    // '/vueMaster.js': jsResponseHandler.getVueMaster,
-    // '/vueComponents.js': vueResponseHandler.getVueComponents,
     '/getUsers': jsonResponseHandler.getUsers,
     '/getData': jsonResponseHandler.getData,
-    '/getCourses': jsonResponseHandler.getCourses,
     '/created': jsonResponseHandler.created,
     '/updated': jsonResponseHandler.updated,
     '/badRequest': jsonResponseHandler.badRequest,
     '/notImplemented': jsonResponseHandler.notImplemented,
+    '/getCourseDetails': jsonResponseHandler.getCourseDetails,
+    '/getEnrollmentDetails': jsonResponseHandler.getEnrollmentDetails,
+    '/getGradeValues': jsonResponseHandler.getGradeValues,
+    '/getStatusValues': jsonResponseHandler.getStatusValues,
     notFound: jsonResponseHandler.notFound,
   },
   HEAD: {
@@ -40,9 +40,9 @@ const urlStruct = {
     notFound: jsonResponseHandler.notFoundMeta,
   },
   POST: {
-    // '/login': authHandler.login,
     '/processRequest': authHandler.processRequest,
-    // '/addUser': jsonResponseHandler.addUser,
+    '/processUserData': jsonResponseHandler.processUserData,
+    // '/gpaData': htmlHandler.getGpaData,
     notFound: jsonResponseHandler.notFound,
   },
 };
