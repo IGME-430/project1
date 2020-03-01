@@ -48,6 +48,7 @@ const urlStruct = {
   },
 };
 
+// When a request is received by the server, determine what we should do with it.
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
 
